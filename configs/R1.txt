@@ -1,0 +1,93 @@
+========================
+HQ-RTR CONFIGURATION
+========================
+
+hostname HQ-RTR
+
+----------------------------------------
+DHCP Configuration
+----------------------------------------
+
+ip dhcp excluded-address 10.10.10.1
+ip dhcp excluded-address 10.10.20.1
+ip dhcp excluded-address 10.10.30.1
+
+ip dhcp pool ENGINEERING
+ network 10.10.10.0 255.255.255.0
+ default-router 10.10.10.1
+ dns-server 8.8.8.8
+
+ip dhcp pool OPERATIONS
+ network 10.10.20.0 255.255.255.0
+ default-router 10.10.20.1
+ dns-server 8.8.8.8
+
+ip dhcp pool SERVERS
+ network 10.10.30.0 255.255.255.0
+ default-router 10.10.30.1
+ dns-server 8.8.8.8
+
+----------------------------------------
+Inter-VLAN Routing
+----------------------------------------
+
+interface g0/0/0
+ no ip address
+
+interface g0/0/0.10
+ encapsulation dot1Q 10
+ ip address 10.10.10.1 255.255.255.0
+ ip access-group 100 in
+
+interface g0/0/0.20
+ encapsulation dot1Q 20
+ ip address 10.10.20.1 255.255.255.0
+
+interface g0/0/0.30
+ encapsulation dot1Q 30
+ ip address 10.10.30.1 255.255.255.0
+
+interface g0/0/0.99
+ encapsulation dot1Q 99
+ ip address 10.10.99.1 255.255.255.0
+
+----------------------------------------
+R1 ↔ R2 Point-to-Point Link
+----------------------------------------
+
+interface g0/0/1
+ ip address 10.0.0.1 255.255.255.252
+
+----------------------------------------
+OSPF
+----------------------------------------
+
+router ospf 1
+ router-id 1.1.1.1
+ network 10.10.10.0 0.0.0.255 area 0
+ network 10.10.20.0 0.0.0.255 area 0
+ network 10.10.30.0 0.0.0.255 area 0
+ network 10.10.99.0 0.0.0.255 area 0
+ network 10.0.0.0 0.0.0.3 area 0
+
+----------------------------------------
+ACL - Network Segmentation
+----------------------------------------
+
+access-list 100 deny ip 10.10.10.0 0.0.0.255 10.10.20.0 0.0.0.255
+access-list 100 permit ip any any
+
+----------------------------------------
+SSH
+----------------------------------------
+
+ip domain-name enterprise.local
+ip ssh version 2
+username admin secret <your-password>
+
+access-list 10 permit 10.10.99.0 0.0.0.255
+
+line vty 0 4
+ access-class 10 in
+ login local
+ transport input ssh

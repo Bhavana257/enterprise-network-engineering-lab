@@ -1,0 +1,78 @@
+========================
+HQ-SW CONFIGURATION
+========================
+
+Hostname:
+hostname HQ-SW
+
+----------------------------------------
+VLAN Configuration
+----------------------------------------
+
+vlan 10
+ name ENGINEERING
+
+vlan 20
+ name OPERATIONS
+
+vlan 30
+ name SERVERS
+
+vlan 99
+ name MANAGEMENT
+
+----------------------------------------
+VLAN Access Ports
+----------------------------------------
+- Assigns end devices to departmental VLANs
+
+interface fa0/1
+ switchport mode access
+ switchport access vlan 10
+
+interface fa0/2
+ switchport mode access
+ switchport access vlan 20
+
+interface fa0/3
+ switchport mode access
+ switchport access vlan 30
+
+interface fa0/10
+ switchport mode access
+ switchport access vlan 99
+
+----------------------------------------
+Trunk Configuration
+----------------------------------------
+- Connects HQ switch to HQ router
+- Carries multiple VLANs
+
+interface fa0/24
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,99
+
+----------------------------------------
+Management VLAN
+----------------------------------------
+
+interface vlan 99
+ ip address 10.10.99.2 255.255.255.0
+ no shutdown
+
+ip default-gateway 10.10.99.1
+
+----------------------------------------
+SSH Configuration
+----------------------------------------
+
+ip domain-name enterprise.local
+ip ssh version 2
+username admin secret <your-password>
+
+access-list 10 permit 10.10.99.0 0.0.0.255
+
+line vty 0 4
+ access-class 10 in
+ login local
+ transport input ssh
